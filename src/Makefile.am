@@ -82,7 +82,7 @@ nicesat_opt_SOURCES=$(nicesat_dbg_SOURCES)
 WARN_CFLAGS=-Wall -Werror -Wwrite-strings -Wno-sign-compare
 WARN_CXXFLAGS=$(WARN_CFLAGS) -Woverloaded-virtual
 INC_CFLAGS=-I@top_srcdir@/libs/picosat-913
-OPT_CFLAGS=-DNDEBUG -O3 -fomit-frame-pointer -finline-limit-10000
+OPT_CFLAGS=-DNDEBUG -O3 -fomit-frame-pointer
 
 libnice_dbg_la_CXXFLAGS=$(WARN_CXXFLAGS) $(INC_CFLAGS) -g -O0
 
