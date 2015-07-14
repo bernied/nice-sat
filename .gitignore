@@ -1,0 +1,32 @@
+# autotools
+**/Makefile
+/autom4te.cache/
+config.*
+.dirstamp
+aclocal.m4
+configure
+m4/*
+tools
+Makefile.in
+stamp-h1
+
+# doxygen
+doxy.conf
+
+# libtool
+.deps/
+.libs/
+/libtool
+
+# object files
+*.lo
+*.o
+*.la
+nicesat_dbg
+nicesat_opt
+
+# generated scripts
+run-tests.sh
+
+# MacOS
+.DS_Store

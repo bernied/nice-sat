@@ -1,0 +1,5 @@
+# Ignore all doxygen generated files in this directory.
+*
+# Except this file
+!.gitignore
+
