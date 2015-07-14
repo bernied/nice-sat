@@ -1,0 +1,10 @@
+TESTS_ENVIRONMENT=$(SHELL)
+
+if RUN_INTEGRATION_TESTS
+RUN_TESTS=run-tests.sh
+else
+RUN_TESTS=
+endif
+
+TESTS=$(RUN_TESTS)
+EXTRA_DIST=fast unit

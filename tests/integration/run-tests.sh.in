@@ -1,0 +1,83 @@
+#!/bin/bash
+#shopt -s xpg_echo
+TOOL="@abs_top_builddir@/src/nicesat_dbg"
+#TOOL="@abs_top_builddir@/src/nicesat_opt"
+TEST_LOG="@abs_builddir@/test-results"
+PICOSAT="@abs_top_builddir@/libs/picosat-913/picosat"
+
+rm -f $TEST_LOG
+
+NUM_TESTS=0
+NUM_PASS=0
+NUM_FAIL=0
+
+function runSat {
+  NUM_TESTS=$[$NUM_TESTS+1]
+  OUTPUT=$(eval $TOOL -s picosat $2 > /dev/null)
+  ans=$?
+
+  if [[ $ans != 0 && $ans != 10 && $ans != 20 ]]; then
+    NUM_FAIL=$[$NUM_FAIL+1]
+    echo " $NUM_FAIL) Failed on $2" >> $TEST_LOG
+    echo "   NICE tool failed -- returned error ($ans)!" >> $TEST_LOG
+    /bin/echo -n "F"
+    return
+  fi
+  
+  if [[ $ans != $1 ]]; then
+    NUM_FAIL=$[$NUM_FAIL+1]
+    echo " $NUM_FAIL) Failed on $2" >> $TEST_LOG
+    echo "   Produced wrong answer $ans.  Expected $1!" >> $TEST_LOG
+    /bin/echo -n "F"
+  else
+    NUM_PASS=$[$NUM_PASS+1]
+    /bin/echo -n "."
+  fi
+}
+
+echo "Running unit integration tests..."
+if [[ -d @abs_srcdir@/unit/sat ]]; then
+  cd @abs_srcdir@/unit/sat
+  INSTANCES=$(exec find . -iname '*.aig') # -or -iname '*.ndb' -or -iname '*.nda')
+  for SATIN in $INSTANCES; do 
+    runSat 10 "@abs_srcdir@/unit/sat/$SATIN" \
+        "@abs_builddir@/unit/sat/$SATIN.cnf"
+  done
+fi
+
+if [[ -d @abs_srcdir@/unit/unsat ]]; then
+  cd @abs_srcdir@/unit/unsat
+  INSTANCES=$(exec find . -iname '*.aig') # -or -iname '*.ndb' -or -iname '*.nda')
+  for UNSATIN in $INSTANCES; do
+    runSat 20 "@abs_srcdir@/unit/unsat/$UNSATIN" \
+        "@abs_builddir@/unit/unsat/$UNSATIN.cnf"
+  done
+fi
+echo
+
+echo "Running fast integration tests..."
+cd @abs_srcdir@/fast/sat
+INSTANCES=$(exec find . -iname '*.aig') # -or -iname '*.ndb' -or -iname '*.nda')
+for SATIN in $INSTANCES; do 
+  runSat 10 "@abs_srcdir@/fast/sat/$SATIN" \
+      "@abs_builddir@/fast/sat/$SATIN.cnf"
+done
+
+cd @abs_srcdir@/fast/unsat
+INSTANCES=$(exec find . -iname '*.aig') # -or -iname '*.ndb' -or -iname '*.nda')
+for UNSATIN in $INSTANCES; do
+  runSat 20 "@abs_srcdir@/fast/unsat/$UNSATIN" \
+      "@abs_builddir@/fast/unsat/$UNSATIN.cnf"
+done
+echo
+
+if [[ $NUM_TESTS == $NUM_PASS ]]; then
+  echo "OK ($NUM_TESTS)"
+  exit 0
+else
+  echo "$NUM_FAIL FAILURES!! ($NUM_PASS / $NUM_TESTS)"
+  echo
+  cat $TEST_LOG
+  rm -f $TEST_LOG
+  exit 1
+fi
